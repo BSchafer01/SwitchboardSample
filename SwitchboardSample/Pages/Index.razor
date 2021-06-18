@@ -1,0 +1,145 @@
+﻿@page "/"
+
+<div class="setup">
+    <div class="form-wrapper">
+        <h2>Parameters</h2>
+        <EditForm Model="arrayParameters" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <div class="form-group">
+                <label>Array Rows</label>
+                <InputNumber class="form-control" @bind-Value="arrayParameters.Rows"></InputNumber>
+                <ValidationMessage For="@(() =>arrayParameters.Rows)" />
+            </div>
+            <div class="form-group">
+                <label>Array Columns</label>
+                <InputNumber class="form-control" @bind-Value="arrayParameters.Cols"></InputNumber>
+                <ValidationMessage For="@(() => arrayParameters.Cols)" />
+            </div>
+            <button class="btn btn-primary btn-block" type="submit">Define Array</button>
+        </EditForm>
+    </div>
+    <div class="info">
+        <h2>The Recursive Switchboard</h2>
+        <p>Define the number of rows and columns in a 2D array with the input to the left and click <code>Define Array</code>.</p>
+        <p>The initial array will appear below. Click any "lightbulb" below to turn the light on.</p>
+        <p>After you have selected the desired lighbulbs for the array configuration click <code>Analyze Array</code>.</p>
+        <p>The recursion method will filter through the array of lights and turn off any light that does not have a powered route to the perimeter of the switchboard.</p>
+        <p>To reset the switchboard click <code>Reset Array</code>.</p>
+    </div>
+</div>
+
+
+<div class="arrays-container">
+    @if (initialArray != null)
+    {
+        <div class="initial">
+            <div class="grid grid-@arrayParameters.Cols">
+                @for (int i = 0; i < initialArray.GetLength(0); i++)
+                {
+                    for (int j = 0; j < initialArray.GetLength(1); j++)
+                    {
+                        int x = i;
+                        int y = j;
+                        <div class="grid-item">
+                            <input type="checkbox" value="@initialArray[i, j]" id="check-@i-@j" @onchange="(eventArgs => HandleCheck(eventArgs, x, y))" checked=@initialArray[x,y] />
+                            <label for="check-@i-@j" class="check-label custom-check"></label>
+                        </div>
+                    }
+                }
+                
+            </div>
+            <button type="submit" class="btn btn-primary btn-block btn-grid" @onclick="HandleArray">Analyze Array</button>
+        </div>
+
+    }
+    @if (finalArray != null)
+    {
+        <div class="final">
+            <div class="grid grid-@arrayParameters.Cols">
+                @for (int i = 0; i < finalArray.GetLength(0); i++)
+                {
+                    for (int j = 0; j < finalArray.GetLength(1); j++)
+                    {
+                        int x = i;
+                        int y = j;
+                        <div class="grid-item">
+
+                            <input type="checkbox" value="@finalArray[i, j]" id="final-check-@i-@j" checked=@finalArray[x,y] disabled />
+                            <label for="final-check-@i-@j" class="check-label custom-check"></label>
+                        </div>
+
+                    }
+                }
+                
+            </div>
+            <button type="submit" class="btn btn-primary btn-block btn-grid" @onclick="HandleReset">Reset Array</button>
+        </div>
+
+    }
+</div>
+
+
+
+
+
+
+@code{
+    ArrayParametersModel arrayParameters = new ArrayParametersModel();
+    bool[,] initialArray;
+    bool[,] finalArray;
+
+
+    protected override void OnInitialized()
+    {
+        arrayParameters.Cols = 6;
+        arrayParameters.Rows = 4;
+    }
+
+    void HandleValidSubmit()
+    {
+        initialArray = new bool[arrayParameters.Rows, arrayParameters.Cols];
+        if (finalArray != null)
+            finalArray = new bool[arrayParameters.Rows, arrayParameters.Cols];
+    }
+
+    void HandleArray()
+    {
+        finalArray = new bool[arrayParameters.Rows, arrayParameters.Cols];
+        for (int i = 0; i < initialArray.GetLength(0); i++)
+        {
+            for (int j = 0; j < initialArray.GetLength(1); j++)
+            {
+                if (initialArray[i,j] && !finalArray[i,j] && (i == 0 || j == 0 || i == initialArray.GetLength(0)-1 || j == initialArray.GetLength(1) - 1))
+                    RecursiveCheck(i, j);
+            }
+        }
+
+    }
+
+    void HandleCheck(ChangeEventArgs args, int i, int j)
+    {
+        initialArray[i, j] = (bool)args.Value;
+    }
+
+    void HandleReset()
+    {
+        initialArray = new bool[arrayParameters.Rows, arrayParameters.Cols];
+        finalArray = new bool[arrayParameters.Rows, arrayParameters.Cols];
+    }
+
+    void RecursiveCheck(int i, int j)
+    {
+        finalArray[i, j] = true;
+        if (i != 0 && initialArray[i-1, j] && !finalArray[i - 1, j])
+            RecursiveCheck(i - 1, j);
+
+        if (i != initialArray.GetLength(0)-1 && initialArray[i+1, j] && !finalArray[i + 1, j])
+            RecursiveCheck(i + 1, j);
+
+        if (j != 0 && initialArray[i, j-1] && !finalArray[i, j - 1])
+            RecursiveCheck(i, j - 1);
+
+        if (j != initialArray.GetLength(1)-1 && initialArray[i, j+1] && !finalArray[i, j + 1])
+            RecursiveCheck(i, j + 1);
+    }
+}
