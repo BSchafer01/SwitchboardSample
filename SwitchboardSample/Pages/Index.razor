@@ -33,7 +33,7 @@
     @if (initialArray != null)
     {
         <div class="initial">
-            <div class="grid grid-@arrayParameters.Cols">
+            <div class="grid" style="grid-template-columns: repeat(@(arrayParameters.Cols),1fr);">
                 @for (int i = 0; i < initialArray.GetLength(0); i++)
                 {
                     for (int j = 0; j < initialArray.GetLength(1); j++)
@@ -46,7 +46,7 @@
                         </div>
                     }
                 }
-                
+
             </div>
             <button type="submit" class="btn btn-primary btn-block btn-grid" @onclick="HandleArray">Analyze Array</button>
         </div>
@@ -55,7 +55,7 @@
     @if (finalArray != null)
     {
         <div class="final">
-            <div class="grid grid-@arrayParameters.Cols">
+            <div class="grid" style="grid-template-columns: repeat(@(arrayParameters.Cols),1fr);">
                 @for (int i = 0; i < finalArray.GetLength(0); i++)
                 {
                     for (int j = 0; j < finalArray.GetLength(1); j++)
